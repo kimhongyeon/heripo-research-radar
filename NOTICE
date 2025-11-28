@@ -1,0 +1,60 @@
+Heripo Research Radar
+Copyright (c) 2025-present kimhongyeon
+
+This project is licensed under the Apache License 2.0.
+See LICENSE file for full license text.
+
+This project is built on top of @llm-newsletter-kit/core and serves as both
+a production service and a reference implementation for the LLM Newsletter Kit.
+
+===============================================================================
+
+ATTRIBUTION REQUIREMENT
+
+If you fork this project to build your own newsletter service or create
+derivative works based on this code, you must include the following
+attribution notice:
+
+  "Powered by LLM Newsletter Kit"
+
+This notice should be included in at least one of the following locations:
+- In your newsletter's HTML template footer
+- In your service's documentation or website
+- In your application's user interface (e.g., footer, about page)
+
+For compliance with Section 4(d) of the Apache License 2.0, this attribution
+notice must be retained in derivative works.
+
+===============================================================================
+
+TRADEMARK NOTICE
+
+The following names, marks, and logos are trademarks of kimhongyeon:
+- "heripo" and "헤리포"
+- "Research Radar" and "리서치 레이더"
+- The heripo logo and associated visual designs
+- Domain name: heripo.com
+
+While the source code is freely available under the Apache 2.0 license,
+use of these trademarks requires explicit permission from the trademark owner.
+
+If you fork or modify this project for your own use, please:
+1. Replace all instances of "heripo" with your own brand name
+2. Replace the logo images with your own
+3. Update the domain references to your own
+4. Update branding in templates and configuration files
+
+Example implementations are welcome to use this code, but should establish
+their own brand identity.
+
+For permission to use the "heripo" trademark, contact the project maintainer
+via GitHub: https://github.com/kimhongyeon/heripo-research-radar/issues
+
+===============================================================================
+
+DEPENDENCIES
+
+This software depends on @llm-newsletter-kit/core, which is also licensed
+under the Apache License 2.0.
+
+For third-party dependencies, see package.json.

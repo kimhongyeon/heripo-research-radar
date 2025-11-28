@@ -1,0 +1,247 @@
+import type { Cheerio } from 'cheerio';
+
+import {
+  DateType,
+  type ParsedTargetDetail,
+  type ParsedTargetListItem,
+} from '@llm-newsletter-kit/core';
+import * as cheerio from 'cheerio';
+import TurndownService from 'turndown';
+
+import { cleanUrl, getDate } from './utils';
+
+export const parseNrichNoticeList = (html: string): ParsedTargetListItem[] => {
+  const $ = cheerio.load(html);
+  const posts: ParsedTargetListItem[] = [];
+  const baseUrl = 'https://www.nrich.go.kr';
+
+  $('table.table-list tbody tr').each((index, element) => {
+    const columns = $(element).find('td');
+    if (columns.length === 0) {
+      return;
+    }
+
+    const titleElement = columns.eq(1).find('a');
+    const relativeHref = titleElement.attr('href');
+
+    if (!relativeHref) {
+      return;
+    }
+
+    const fullUrl = new URL(`/kor/${relativeHref}`, baseUrl);
+    const detailUrl = fullUrl.href;
+    const uniqId = fullUrl.searchParams.get('bbs_idx') ?? undefined;
+
+    const title =
+      titleElement.attr('title')?.trim() ?? titleElement.text()?.trim() ?? '';
+    const date = getDate(columns.eq(3).text().trim());
+
+    posts.push({
+      uniqId,
+      title,
+      date,
+      detailUrl: cleanUrl(detailUrl),
+      dateType: DateType.REGISTERED,
+    });
+  });
+
+  return posts;
+};
+
+export const parseNrichMajorEventList = (
+  html: string,
+): ParsedTargetListItem[] => {
+  const $ = cheerio.load(html);
+  const posts: ParsedTargetListItem[] = [];
+
+  $('ul.event-list li a').each((index, element) => {
+    const uniqId = getUniqIdFromNrichMajorEvent($(element));
+    const detailUrl = `https://www.nrich.go.kr/kor/majorView.do?menuIdx=286&bbs_idx=${uniqId}`;
+
+    const title = $(element)
+      .find('strong')
+      .clone()
+      .children('span')
+      .remove()
+      .end()
+      .text()
+      .trim();
+
+    const dateSplit = getDate(
+      $(element).find('span.date').text().replaceAll('행사기간 : ', '').trim(),
+    ).split(' ~ ');
+
+    const startDate = dateSplit[0];
+    const endDate = dateSplit[1];
+    const hasEndDate = startDate !== endDate;
+
+    if (uniqId) {
+      posts.push({
+        uniqId,
+        title,
+        date: hasEndDate ? `${startDate} ~ ${endDate}` : startDate,
+        detailUrl: cleanUrl(detailUrl),
+        dateType: hasEndDate ? DateType.DURATION : DateType.REGISTERED,
+      });
+    }
+  });
+
+  return posts;
+};
+
+export const parseNrichJournalList = (html: string): ParsedTargetListItem[] => {
+  const $ = cheerio.load(html);
+  const posts: ParsedTargetListItem[] = [];
+  const baseUrl = 'https://www.nrich.go.kr';
+
+  $('table.table-list tbody tr').each((index, element) => {
+    const columns = $(element).find('td');
+    if (columns.length === 0) {
+      return;
+    }
+
+    const titleElement = columns.eq(1).find('a');
+    const relativeHref = titleElement.attr('href');
+
+    if (!relativeHref) {
+      return;
+    }
+
+    const fullUrl = new URL(`${relativeHref}`, baseUrl);
+    const detailUrl = fullUrl.href;
+    const uniqId = fullUrl.searchParams.get('bbs_idx') ?? undefined;
+
+    const title =
+      titleElement.attr('title')?.trim() ?? titleElement.text()?.trim() ?? '';
+    const date = getDate(columns.eq(2).text().trim());
+
+    posts.push({
+      uniqId,
+      title,
+      date,
+      detailUrl: cleanUrl(detailUrl),
+      dateType: DateType.REGISTERED,
+    });
+  });
+
+  return posts;
+};
+
+export const parseNrichPortalList = (html: string): ParsedTargetListItem[] => {
+  const $ = cheerio.load(html);
+  const posts: ParsedTargetListItem[] = [];
+  const baseUrl = 'https://portal.nrich.go.kr';
+
+  $('table.tbl02 tbody tr').each((index, element) => {
+    const columns = $(element).find('td');
+    if (columns.length === 0) {
+      return;
+    }
+
+    const titleElement = columns.eq(1).find('a');
+    const relativeHref = titleElement.attr('href');
+
+    if (!relativeHref) {
+      return;
+    }
+
+    const fullUrl = new URL(`/kor/${relativeHref}`, baseUrl);
+    const detailUrl = fullUrl.href;
+    const uniqId = fullUrl.searchParams.get('bbs_idx') ?? undefined;
+
+    const title =
+      titleElement.attr('title')?.trim() ?? titleElement.text()?.trim() ?? '';
+    const date = getDate(columns.eq(2).text().trim());
+
+    posts.push({
+      uniqId,
+      title,
+      date,
+      detailUrl: cleanUrl(detailUrl),
+      dateType: DateType.REGISTERED,
+    });
+  });
+
+  return posts;
+};
+
+export const parseNrichNoticeDetail = (html: string): ParsedTargetDetail => {
+  const $ = cheerio.load(html);
+
+  const trList = $('table.table-view tbody tr');
+
+  const content = trList.eq(3).find('td');
+
+  return {
+    detailContent: new TurndownService().turndown(content.html() ?? ''),
+    hasAttachedFile: trList.length > 4,
+    hasAttachedImage: content.find('img').length > 0,
+  };
+};
+
+export const parseNrichMajorEventDetail = (
+  html: string,
+): ParsedTargetDetail => {
+  const $ = cheerio.load(html);
+
+  const trList = $('table.table-view tbody tr');
+
+  const content = trList.eq(4).find('td');
+
+  return {
+    detailContent: new TurndownService().turndown(content.html() ?? ''),
+    hasAttachedFile: false,
+    hasAttachedImage: content.find('img').length > 0,
+  };
+};
+
+export const parseNrichJournalDetail = (html: string): ParsedTargetDetail => {
+  const $ = cheerio.load(html);
+  $('script, style').remove();
+
+  const articles: string[] = [];
+
+  // 테이블의 각 행을 순회하면서 논문 정보 추출
+  $('table.table-list tbody tr').each((index, element) => {
+    const columns = $(element).find('td');
+    if (columns.length === 0) {
+      return;
+    }
+
+    const number = columns.eq(0).text().trim();
+    const titleElement = columns.eq(1).find('a');
+    const title = titleElement.text().trim();
+    const author = columns.eq(2).text().trim();
+
+    if (title && author) {
+      articles.push(`${number}. **${title}**\n   저자: ${author}`);
+    }
+  });
+
+  const content =
+    articles.length > 0 ? `## 논문 목록\n\n${articles.join('\n\n')}` : '';
+
+  return {
+    detailContent: content,
+    hasAttachedFile: true,
+    hasAttachedImage: false,
+  };
+};
+
+export const parseNrichPortalDetail = (html: string): ParsedTargetDetail => {
+  const $ = cheerio.load(html);
+
+  const content = $('div.detail_Area2');
+
+  return {
+    detailContent: new TurndownService().turndown(content.html() ?? ''),
+    hasAttachedFile: false,
+    hasAttachedImage: content.find('img').length > 0,
+  };
+};
+
+function getUniqIdFromNrichMajorEvent(element: Cheerio<any>) {
+  return (
+    (element.attr('onclick') ?? '').match(/fnViewPage\('(.*)'\)/)?.[1] ?? ''
+  );
+}

@@ -1,0 +1,98 @@
+{
+  "name": "@heripo/research-radar",
+  "private": false,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "AI-driven intelligence for Korean cultural heritage. This package serves as both a ready-to-use newsletter service and a practical implementation example for the LLM-Newsletter-Kit.",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "npm run clean && rollup -c",
+    "prepublishOnly": "npm run build",
+    "preversion": "npm run build",
+    "postversion": "git push --follow-tags",
+    "release": "npm publish --access public",
+    "release:patch": "npm version patch && npm publish --access public",
+    "release:minor": "npm version minor && npm publish --access public",
+    "release:major": "npm version major && npm publish --access public",
+    "lint": "eslint ./src",
+    "lint:fix": "eslint --fix ./src",
+    "lint:ci": "eslint --quiet ./src",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md,mdx}\""
+  },
+  "author": "kimhongyeon",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@ai-sdk/openai": "^2.0.74",
+    "cheerio": "^1.1.2",
+    "turndown": "^7.2.2"
+  },
+  "peerDependencies": {
+    "@llm-newsletter-kit/core": "*"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@trivago/prettier-plugin-sort-imports": "^6.0.0",
+    "@types/node": "^24.10.1",
+    "@types/turndown": "^5.0.6",
+    "eslint": "^9.39.1",
+    "eslint-plugin-unused-imports": "^4.3.0",
+    "prettier": "^3.7.1",
+    "rimraf": "^6.1.2",
+    "rollup": "^4.53.3",
+    "rollup-plugin-dts": "^6.3.0",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kimhongyeon/heripo-research-radar"
+  },
+  "bugs": {
+    "url": "https://github.com/kimhongyeon/heripo-research-radar/issues"
+  },
+  "homepage": "https://heripo.com",
+  "keywords": [
+    "cultural-heritage",
+    "archaeology",
+    "art-history",
+    "korean-heritage",
+    "museum",
+    "heripo",
+    "research-radar",
+    "llm-newsletter-kit",
+    "newsletter",
+    "ai-newsletter",
+    "research-automation",
+    "intelligence",
+    "data-analysis",
+    "excavation",
+    "driver",
+    "example"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
